@@ -1,0 +1,6 @@
+node_modules/
+*.o
+*.out
+src/c_core/drone_scheduler
+*.log
+.DS_Store

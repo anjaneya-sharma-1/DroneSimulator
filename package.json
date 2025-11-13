@@ -1,0 +1,18 @@
+{
+  "name": "drone-scheduler-simulation",
+  "version": "1.0.0",
+  "description": "Autonomous Delivery Drone Scheduler Simulation with C backend and web visualization",
+  "main": "src/web/server/index.js",
+  "scripts": {
+    "build:c": "make -C src/c_core",
+    "dev": "node src/web/server/index.js",
+    "start": "npm run build:c && npm run dev"
+  },
+  "keywords": ["drone", "scheduler", "operating-systems", "pthreads", "simulation"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Delivery Drone Scheduler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 500px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-clear {
+            background: #ff6b6b;
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.active {
+            background: #4caf50;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 8px;
+            padding: 20px;
+            height: 700px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .log-line {
+            margin-bottom: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .list-container {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .list-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .list-item.task {
+            border-left-color: #38ef7d;
+        }
+
+        .list-item .priority-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .priority-1 { background-color: #f44336; }
+        .priority-2 { background-color: #ff9800; }
+        .priority-3 { background-color: #4caf50; }
+
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .counter {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 1400px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚁 Autonomous Delivery Drone Scheduler</h1>
+            <p class="subtitle">Operating Systems Scheduling & Synchronization Simulation</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>🤖 Add Drones<span class="counter" id="droneCount">0</span></h2>
+                
+                <div class="control-group">
+                    <label for="droneSpeed">Drone Speed (1-3)</label>
+                    <select id="droneSpeed">
+                        <option value="1">Slow (1x)</option>
+                        <option value="2" selected>Medium (2x)</option>
+                        <option value="3">Fast (3x)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="droneBattery">Battery Level (%)</label>
+                    <input type="number" id="droneBattery" min="20" max="100" value="100">
+                </div>
+
+                <button class="btn-add" onclick="addDrone()">➕ Add Drone</button>
+
+                <div class="list-container" id="droneList"></div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-clear" onclick="clearDrones()">Clear All</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📦 Add Tasks<span class="counter" id="taskCount">0</span></h2>
+                
+                <div class="control-group">
+                    <label for="taskWarehouse">Warehouse</label>
+                    <select id="taskWarehouse">
+                        <option value="A">Warehouse A</option>
+                        <option value="B">Warehouse B</option>
+                        <option value="C">Warehouse C</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="taskCustomer">Customer Name/ID</label>
+                    <input type="text" id="taskCustomer" placeholder="e.g., Customer-101">
+                </div>
+
+                <div class="form-row">
+                    <div class="control-group">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority">
+                            <option value="1">🔴 Urgent (1)</option>
+                            <option value="2" selected>🟡 Medium (2)</option>
+                            <option value="3">🟢 Low (3)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="taskTime">Est. Time (sec)</label>
+                        <input type="number" id="taskTime" min="5" max="60" value="10">
+                    </div>
+                </div>
+
+                <button class="btn-add" onclick="addTask()">➕ Add Task</button>
+
+                <div class="list-container" id="taskList"></div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-clear" onclick="clearTasks()">Clear All</button>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color priority-1"></div>
+                        <span>Urgent</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color priority-2"></div>
+                        <span>Medium</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color priority-3"></div>
+                        <span>Low</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚙️ Simulation Controls</h2>
+                
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Ready to start</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="control-group">
+                        <label for="numCharging">Charging Stations</label>
+                        <input type="number" id="numCharging" min="1" max="10" value="3">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="numLoading">Loading Bays</label>
+                        <input type="number" id="numLoading" min="1" max="10" value="5">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="duration">Simulation Duration (seconds)</label>
+                    <input type="number" id="duration" min="10" max="300" value="40">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-start" id="startBtn" onclick="startSimulation()">
+                        ▶️ Start
+                    </button>
+                    <button class="btn-stop" id="stopBtn" onclick="stopSimulation()" disabled>
+                        ⏹️ Stop
+                    </button>
+                </div>
+
+                <h2 style="margin-top: 25px;">📊 Real-Time Event Log</h2>
+                <div class="log-container" id="logContainer">
+                    <div class="log-line">Waiting for simulation to start...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Demonstrating: Pthreads, Mutex Locks, Semaphores, Priority Scheduling & Preemption</p>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let isRunning = false;
+        let drones = [];
+        let tasks = [];
+
+        function updateCounts() {
+            document.getElementById('droneCount').textContent = drones.length;
+            document.getElementById('taskCount').textContent = tasks.length;
+        }
+
+        function renderDrones() {
+            const list = document.getElementById('droneList');
+            list.innerHTML = drones.map((drone, idx) => `
+                <div class="list-item">
+                    <div>
+                        <strong>Drone ${idx + 1}</strong><br>
+                        Speed: ${drone.speed}x, Battery: ${drone.battery}%
+                    </div>
+                    <button class="delete-btn" onclick="deleteDrone(${idx})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = tasks.map((task, idx) => `
+                <div class="list-item task">
+                    <div>
+                        <strong>${task.customer}</strong><br>
+                        Warehouse ${task.warehouse}, Priority ${task.priority}, ${task.estimatedTime}s
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="priority-badge priority-${task.priority}">P${task.priority}</span>
+                        <button class="delete-btn" onclick="deleteTask(${idx})">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addDrone() {
+            const speed = parseInt(document.getElementById('droneSpeed').value);
+            const battery = parseInt(document.getElementById('droneBattery').value);
+            
+            if (battery < 20 || battery > 100) {
+                alert('Battery must be between 20% and 100%');
+                return;
+            }
+
+            drones.push({ speed, battery });
+            updateCounts();
+            renderDrones();
+        }
+
+        function deleteDrone(idx) {
+            drones.splice(idx, 1);
+            updateCounts();
+            renderDrones();
+        }
+
+        function clearDrones() {
+            if (drones.length > 0 && confirm('Clear all drones?')) {
+                drones = [];
+                updateCounts();
+                renderDrones();
+            }
+        }
+
+        function addTask() {
+            const warehouse = document.getElementById('taskWarehouse').value;
+            const customer = document.getElementById('taskCustomer').value.trim();
+            const priority = parseInt(document.getElementById('taskPriority').value);
+            const estimatedTime = parseInt(document.getElementById('taskTime').value);
+
+            if (!customer) {
+                alert('Please enter a customer name/ID');
+                return;
+            }
+
+            tasks.push({ warehouse, customer, priority, estimatedTime });
+            updateCounts();
+            renderTasks();
+            
+            document.getElementById('taskCustomer').value = '';
+        }
+
+        function deleteTask(idx) {
+            tasks.splice(idx, 1);
+            updateCounts();
+            renderTasks();
+        }
+
+        function clearTasks() {
+            if (tasks.length > 0 && confirm('Clear all tasks?')) {
+                tasks = [];
+                updateCounts();
+                renderTasks();
+            }
+        }
+
+        function connectEventStream() {
+            eventSource = new EventSource('/api/stream');
+            
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'log') {
+                    appendLog(data.data);
+                } else if (data.type === 'error') {
+                    appendLog(`ERROR: ${data.data}`, true);
+                } else if (data.type === 'complete') {
+                    updateStatus(false);
+                    appendLog('\n=== Simulation Complete ===\n');
+                }
+            };
+
+            eventSource.onerror = () => {
+                console.error('EventSource connection error');
+            };
+        }
+
+        function appendLog(text, isError = false) {
+            const logContainer = document.getElementById('logContainer');
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+            logLine.textContent = text;
+            
+            if (isError) {
+                logLine.style.color = '#ff6b6b';
+            }
+            
+            logContainer.appendChild(logLine);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function updateStatus(running) {
+            isRunning = running;
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            if (running) {
+                statusDot.classList.add('active');
+                statusText.textContent = 'Simulation Running';
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } else {
+                statusDot.classList.remove('active');
+                statusText.textContent = 'Ready to start';
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        }
+
+        async function startSimulation() {
+            if (drones.length === 0) {
+                alert('Please add at least one drone');
+                return;
+            }
+
+            if (tasks.length === 0) {
+                alert('Please add at least one task');
+                return;
+            }
+
+            const charging = parseInt(document.getElementById('numCharging').value);
+            const loading = parseInt(document.getElementById('numLoading').value);
+            const duration = parseInt(document.getElementById('duration').value);
+
+            document.getElementById('logContainer').innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ drones, tasks, charging, loading, duration })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus(true);
+                    appendLog('Simulation started with custom configuration...\n');
+                } else {
+                    appendLog(`Error: ${data.error}`, true);
+                }
+            } catch (error) {
+                appendLog(`Error: ${error.message}`, true);
+            }
+        }
+
+        async function stopSimulation() {
+            try {
+                const response = await fetch('/api/stop', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus(false);
+                    appendLog('\nSimulation stopped by user.\n');
+                }
+            } catch (error) {
+                appendLog(`Error: ${error.message}`, true);
+            }
+        }
+
+        connectEventStream();
+        updateCounts();
+    </script>
+</body>
+</html>

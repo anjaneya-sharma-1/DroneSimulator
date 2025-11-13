@@ -1,0 +1,168 @@
+
+### 🚀 **Prompt for AI Builder**
+
+**Project Title:** Autonomous Delivery Drone Scheduler (Simulation-Based)
+
+**Goal:**
+Build a **simulation** (no real drone hardware control) that models and visualizes how multiple autonomous delivery drones are scheduled and coordinated efficiently using **operating system scheduling principles** such as **priority scheduling, preemption, and synchronization**.
+
+---
+
+### 🧩 **Project Overview**
+
+The system should simulate a fleet of drones performing delivery tasks (pickup → delivery → charging) under the control of a **central scheduler**.
+Each **drone is modeled as a thread**, and **tasks are stored in a priority queue**.
+Synchronization mechanisms (like mutex locks or semaphores) will be used to ensure that shared resources (like **charging stations** and **loading bays**) are accessed safely.
+
+The aim is to **visualize and analyze how scheduling algorithms handle concurrent operations** in a real-world–inspired logistics scenario.
+
+---
+
+### 🧠 **Core Components**
+
+1. **Drone Threads**
+
+   * Each drone runs as a separate thread.
+   * Attributes:
+
+     * Drone ID
+     * Speed (affects delivery time)
+     * Battery level
+     * Task queue (deliveries assigned)
+   * Behavior:
+
+     * Executes delivery tasks.
+     * Requests charging when battery is low.
+     * Waits if no task is available.
+
+2. **Delivery Task Queue**
+
+   * Implemented as a **priority queue** (higher priority = urgent delivery).
+   * Each task contains:
+
+     * Task ID
+     * Source location
+     * Destination location
+     * Priority (1 = highest)
+     * Estimated delivery time
+
+3. **Central Scheduler**
+
+   * Continuously monitors the task queue and drone statuses.
+   * Assigns tasks to drones based on:
+
+     * Drone availability
+     * Task priority
+     * Drone battery level
+   * Handles **preemption** (urgent task interrupts current low-priority delivery).
+   * Reassigns tasks if a drone becomes unavailable (low battery or charging).
+
+4. **Synchronization (Concurrency Control)**
+
+   * **Mutex locks / semaphores** ensure drones don’t simultaneously use shared resources.
+   * Shared resources:
+
+     * Charging stations (limited count)
+     * Loading bays
+   * Proper logging or visualization when resources are locked/unlocked.
+
+---
+
+### ⚙️ **Simulation Features**
+
+1. **Visualization (Optional but Encouraged):**
+
+   * GUI or console-based simulation showing:
+
+     * Drone movements (simulated progress bars or animated icons)
+     * Task assignment logs
+     * Queue status (priority-based ordering)
+     * Charging activity
+
+2. **Scheduling Algorithms to Demonstrate:**
+
+   * Priority Scheduling (main algorithm)
+   * Round Robin or FCFS (optional comparison)
+   * Preemptive scheduling (urgent deliveries interrupt ongoing ones)
+
+3. **Concurrency Demonstration:**
+
+   * Show multiple drones performing deliveries concurrently.
+   * Log statements like:
+
+     * `[Drone 1] Picked up task T3 (priority 2)`
+     * `[Drone 2] Waiting for charging station`
+     * `[Scheduler] Preempted Drone 3 for urgent task T1`
+
+---
+
+### 🧰 **Implementation Details**
+
+* **Language:** C or C++
+* **Libraries:** pthreads, semaphores (`pthread.h`, `semaphore.h`)
+* **Core Concepts Used:**
+
+  * Threads
+  * Mutex locks
+  * Semaphores
+  * Priority queues
+  * Preemption handling
+  * Logging/visualization
+
+---
+
+### 📊 **Expected Output / Results**
+
+* Console or GUI display of:
+
+  * Task queue before and after scheduling
+  * Drone status updates in real-time
+  * Resource lock/unlock messages
+  * Task completion summary
+
+* Educational insights:
+
+  * How scheduling affects delivery efficiency.
+  * How preemption alters task flow.
+  * Impact of synchronization on system stability.
+
+---
+
+### 🌟 **Bonus Enhancements (Optional if possible if time permits)**
+
+* Include **battery consumption simulation** (battery drains during tasks).
+* Add a **charging time delay**.
+* Use **color-coded visualization** for different priorities.
+* Add statistics at the end:
+
+  * Average delivery time
+  * Total preemptions
+  * Resource utilization percentage
+
+---
+
+### 🧩 **Example Simulation Flow**
+
+1. Initialize 3 drones (D1, D2, D3).
+2. Add 6 delivery tasks with mixed priorities.
+3. Scheduler assigns tasks based on priority.
+4. Drones execute deliveries concurrently.
+5. One drone encounters low battery → requests charging.
+6. Scheduler pauses its task, reallocates pending deliveries.
+7. New urgent task arrives → preempts one active drone.
+8. Simulation logs all events for analysis.
+
+---
+
+### 🧑‍💻 **Deliverables**
+
+* Source code implementing the simulator.
+* Visualization (either console-based or GUI-based).
+* Log or report summarizing:
+
+  * Task allocations
+  * Scheduling decisions
+  * Synchronization events
+* Brief readme explaining usage and algorithms implemented.
+
+.
