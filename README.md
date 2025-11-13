@@ -500,4 +500,4 @@ Built as an operating systems educational project demonstrating core OS concepts
 
 ---
 
-**Note**: This is a simulation for educational purposes. No real drones were harmed in the making of this project. 🚁
+**Note**: This is a simulation for educational purposes.
