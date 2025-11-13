@@ -4,3 +4,4 @@ node_modules/
 src/c_core/drone_scheduler
 *.log
 .DS_Store
+.env
