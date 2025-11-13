@@ -1,4 +1,3 @@
-
 ### 🚀 **Prompt for AI Builder**
 
 **Project Title:** Autonomous Delivery Drone Scheduler (Simulation-Based)

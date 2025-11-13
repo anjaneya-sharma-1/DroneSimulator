@@ -110,29 +110,29 @@ This is an operating systems educational project that simulates autonomous deliv
    - View statistics when complete
 
 ### Command Line (Legacy):
-```bash
+\`\`\`bash
 cd src/c_core
 ./drone_scheduler --drones 5 --charging 2 --loading 3 --duration 60
-```
+\`\`\`
 
 ## Configuration Format
 
 The C program accepts configuration via stdin:
-```
+\`\`\`
 DRONE <speed> <battery>
 TASK <warehouse> <customer_name> <priority> <estimated_time>
 START
-```
+\`\`\`
 
 Example:
-```
+\`\`\`
 DRONE 2 100
 DRONE 1 85
 TASK A Customer-101 2 10
 TASK B Big Store Chain 1 12
 TASK C John Doe Residence 3 8
 START
-```
+\`\`\`
 
 ## Project Goals
 
