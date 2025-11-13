@@ -961,24 +961,30 @@
         }
 
         function connectEventStream() {
-            eventSource = new EventSource('/api/stream');
-            
-            eventSource.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                
-                if (data.type === 'log') {
-                    appendLog(data.data);
-                } else if (data.type === 'error') {
-                    appendLog(`ERROR: ${data.data}`, 'error');
-                } else if (data.type === 'complete') {
-                    updateStatus(false);
-                    appendLog('\n=== Simulation Complete ===\n', 'success');
-                }
-            };
+            try {
+                eventSource = new EventSource('/api/stream');
 
-            eventSource.onerror = () => {
-                console.error('EventSource connection error');
-            };
+                eventSource.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+
+                    if (data.type === 'log') {
+                        appendLog(data.data);
+                    } else if (data.type === 'error') {
+                        appendLog(`ERROR: ${data.data}`, 'error');
+                    } else if (data.type === 'complete') {
+                        updateStatus(false);
+                        appendLog('\n=== Simulation Complete ===\n', 'success');
+                    }
+                };
+
+                eventSource.onerror = () => {
+                    console.error('EventSource connection error');
+                    appendLog('⚠️ Connection lost with backend server', 'error');
+                    updateStatus(false);
+                };
+            } catch (error) {
+                console.error('Failed to connect to event stream:', error);
+            }
         }
 
         function appendLog(text, type = 'normal') {
@@ -1027,7 +1033,8 @@
             const duration = parseInt(document.getElementById('duration').value);
 
             document.getElementById('logContainer').innerHTML = '';
-            
+            appendLog('🔄 Connecting to server...', 'normal');
+
             try {
                 const response = await fetch('/api/start', {
                     method: 'POST',
@@ -1037,16 +1044,37 @@
                     body: JSON.stringify({ drones, tasks, charging, loading, duration })
                 });
 
+                if (!response.ok) {
+                    let errorMessage;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorData.error || 'Server error';
+                    } catch (e) {
+                        const errorText = await response.text();
+                        errorMessage = errorText || `HTTP ${response.status} error`;
+                    }
+
+                    appendLog(`❌ Error: ${errorMessage}`, 'error');
+
+                    if (response.status === 501) {
+                        appendLog('\n💡 Hint: Make sure the backend server is running with "npm start"', 'error');
+                    }
+                    return;
+                }
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     updateStatus(true);
-                    appendLog('Simulation started...\n', 'success');
+                    appendLog('✅ Simulation started successfully!\n', 'success');
                 } else {
-                    appendLog(`Error: ${data.error}`, 'error');
+                    appendLog(`❌ Error: ${data.error}`, 'error');
                 }
             } catch (error) {
-                appendLog(`Error: ${error.message}`, 'error');
+                appendLog(`❌ Cannot connect to backend server`, 'error');
+                appendLog(`💡 Make sure the server is running: npm start`, 'error');
+                appendLog(`📍 Technical details: ${error.message}`, 'error');
+                console.error('Full error:', error);
             }
         }
 
@@ -1056,14 +1084,32 @@
                     method: 'POST'
                 });
 
+                if (!response.ok) {
+                    let errorMessage;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorData.error || 'Server error';
+                    } catch (e) {
+                        const errorText = await response.text();
+                        errorMessage = errorText || `HTTP ${response.status} error`;
+                    }
+
+                    appendLog(`❌ Error: ${errorMessage}`, 'error');
+                    return;
+                }
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     updateStatus(false);
-                    appendLog('\nSimulation stopped.\n', 'success');
+                    appendLog('\n✅ Simulation stopped.\n', 'success');
+                } else {
+                    appendLog(`❌ Error: ${data.error}`, 'error');
                 }
             } catch (error) {
-                appendLog(`Error: ${error.message}`, 'error');
+                appendLog(`❌ Cannot connect to backend server`, 'error');
+                appendLog(`📍 Technical details: ${error.message}`, 'error');
+                console.error('Full error:', error);
             }
         }
 
